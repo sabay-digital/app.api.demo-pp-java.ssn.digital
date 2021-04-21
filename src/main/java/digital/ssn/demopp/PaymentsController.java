@@ -3,6 +3,7 @@ package digital.ssn.demopp;
 import spark.Route;
 import spark.Request;
 import spark.Response;
+import java.io.IOException;
 import java.nio.charset.*;
 import java.util.HashMap;
 import com.google.common.hash.*;
@@ -66,8 +67,12 @@ public class PaymentsController {
             // Step 3 - Verify Trust: https://github.com/sabay-digital/org.ssn.doc.public/blob/master/tg/tg001.md#step-3---optionally-verify-the-trustline
             HashMap<String, String> paymentCCY = payment.getPaymentArray();
             paymentCCY.forEach((key, val) -> {
-                if (!Trust.Verify(payment.network_address, key, kp.getAccountId(), ssnAPI)) {
-                    paymentCCY.remove(key);
+                try {
+                    if (!Trust.Verify(payment.network_address, key, kp.getAccountId(), ssnAPI)) {
+                        paymentCCY.remove(key);
+                    }
+                } catch (IOException e) {
+                    System.out.println("Something went wrong");
                 }
             });
             System.out.println(paymentCCY.toString());
